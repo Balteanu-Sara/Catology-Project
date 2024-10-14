@@ -1,6 +1,6 @@
 import pandas as pd
 
-df = pd.read_excel('../Data/cats_data.xlsx')
+df = pd.read_excel('../Data/cats_data1.xlsx')
 
 print(df.info())
 print(df.describe(include='all'))
