@@ -4,18 +4,19 @@ import seaborn as sns
 
 # Încarcă setul de date
 df = pd.read_excel('../Data/cats_data.xlsx')
-
 sns.set(style="whitegrid")
 
 # 1. Distribuția raselor de pisici (Bar Chart)
-plt.figure(figsize=(10, 6))
-df['Race'].value_counts().plot(kind='bar', color='skyblue')
-plt.title('Distribuția raselor de pisici')
-plt.xlabel('Rasă')
-plt.ylabel('Număr de pisici')
-plt.xticks(rotation=45)
-plt.show()
-
+for col in df.columns:
+    if not (str(col) == 'Row.names' or str(col) == 'Horodateur' or str(col) == 'Plus'):
+        plt.figure(figsize=(10, 8))
+        df[col].value_counts().plot(kind='bar', color='skyblue')
+        plt.title('Distribuția ' + col)
+        plt.xlabel(col)
+        plt.ylabel('Număr de pisici')
+        plt.xticks(rotation=45)
+        plt.show()
+'''
 # 2. Histogramă pentru distribuția comportamentelor (Timide, Calme, Effrayé)
 plt.figure(figsize=(10, 6))
 df[['Timide', 'Calme', 'Effrayé']].hist(bins=5, color='skyblue', alpha=0.7, figsize=(12, 8))
@@ -34,4 +35,4 @@ plt.figure(figsize=(10, 8))
 correlation_matrix = df.corr()
 sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', linewidths=0.5)
 plt.title('Corelația între atributele numerice')
-plt.show()
+plt.show()'''
