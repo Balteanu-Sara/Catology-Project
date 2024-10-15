@@ -18,7 +18,7 @@ df["Abondance"] = df["Abondance"].map(lambda a: int(a) if a != "NSP" else 0)
 df["PredOiseau"] = df["PredOiseau"].map({0: 0, 1: 3, 2: 7.5, 3: 24, 4: 52})
 df["PredMamm"] = df["PredMamm"].map({0: 0, 1: 3, 2: 7.5, 3: 24, 4: 52})
 
-mapping_dict = {}
+'''mapping_dict = {}
 for attr in code_df['Variable'].unique():
     if attr == 'Nombre':  # Skip mapping for the 'nombre' variable
         continue
@@ -44,7 +44,7 @@ for attr in code_df['Variable'].unique():
 
 for col in df.columns:
     if col not in ['Row.names', 'Horodateur', 'Plus']:
-        plt.figure(figsize=(8, 7))
+        plt.figure(figsize=(10, 8))
 
         # Check if the column has a mapping
         if col in mapping_dict:
@@ -68,22 +68,20 @@ for col in df.columns:
             plt.xlabel(col)
             plt.ylabel('Număr de pisici')
             plt.xticks(rotation=45)
-            plt.show()
+            plt.show()'''
 
-# # Încarcă setul de date
-# df = pd.read_excel('../Data/cats_data.xlsx')
-# sns.set(style="whitegrid")
-#
-# # 1. Distribuția raselor de pisici (Bar Chart)
-# for col in df.columns:
-#     if not (str(col) == 'Row.names' or str(col) == 'Horodateur' or str(col) == 'Plus'):
-#         plt.figure(figsize=(10, 8))
-#         df[col].value_counts().plot(kind='bar', color='skyblue')
-#         plt.title('Distribuția ' + col)
-#         plt.xlabel(col)
-#         plt.ylabel('Număr de pisici')
-#         plt.xticks(rotation=45)
-#         plt.show()
+sns.set(style="whitegrid")
+
+# 1. Distribuția raselor de pisici (Bar Chart)
+for col in df.columns:
+    if not (str(col) == 'Row.names' or str(col) == 'Horodateur' or str(col) == 'Plus'):
+        plt.figure(figsize=(8, 7))
+        df[col].value_counts().plot(kind='bar', color='skyblue')
+        plt.title('Distribuția ' + col)
+        plt.xlabel(col)
+        plt.ylabel('Număr de pisici')
+        plt.xticks(rotation=45)
+        plt.show()
 '''
 # 2. Histogramă pentru distribuția comportamentelor (Timide, Calme, Effrayé)
 plt.figure(figsize=(10, 6))
