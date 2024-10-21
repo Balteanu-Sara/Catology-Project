@@ -42,4 +42,28 @@ print(class_counts)
 print(df.to_string(max_rows=100))
 
 
+print("Numar de instante a fiecarei clase din toate atributele")
+for col in df.columns:
+    if col not in ['Row.names', 'Horodateur', 'Plus']:
+        print(f"\nAttribute: {col}")
+        print(df[col].value_counts())
+
+
+def print_distinct_values_per_class(df, class_column):
+    attributes = df.columns.difference([class_column, 'Row.names', 'Horodateur', 'Plus'])
+
+    for class_value in df[class_column].unique():
+        if class_value not in ['Row.names', 'Horodateur', 'Plus']:
+            print(f"\n----------{class_column}: {class_value} \n")
+            class_group = df[df[class_column] == class_value]
+
+            for attr in attributes:
+                print(f"\nAtribut: {attr}")
+
+                distinct_values = class_group[attr].value_counts()
+                for value, count in distinct_values.items():
+                    print(f"  Valoare: {value}, Frecvență: {count}")
+
+
+print_distinct_values_per_class(df, 'PredMamm')
 
