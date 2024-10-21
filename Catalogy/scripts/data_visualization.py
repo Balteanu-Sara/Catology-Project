@@ -8,41 +8,32 @@ code_df = pd.read_excel('../Data/cats_data1.xlsx', sheet_name='Code')
 
 mapping_dict = {}
 for attr in code_df['Variable'].unique():
-    if attr == 'Nombre':  # Skip mapping for the 'nombre' variable
+    if attr == 'Nombre':
         continue
 
-    # Create a dictionary for each attribute, splitting values and meanings
     attr_mapping = {}
     for _, row in code_df[code_df['Variable'] == attr].iterrows():
-        # Check if 'Values' is a string before splitting
         if isinstance(row['Values'], str):
-            values = row['Values'].split('/')  # Split using '/'
-            meanings = row['Meaning']  # No change needed
+            values = row['Values'].split('/')
+            meanings = row['Meaning']
 
-            meanings_cleaned = re.sub(r'\(.*?\)', '', meanings)  # Remove parentheses content
-            meanings_cleaned = meanings_cleaned.split('/')  # Split meanings
+            meanings_cleaned = re.sub(r'\(.*?\)', '', meanings)
+            meanings_cleaned = meanings_cleaned.split('/')
 
-            # Clean up the meanings: Strip extra spaces
             meanings = [meaning.strip() for meaning in meanings_cleaned if meaning.strip()]
 
-            # Create a mapping from each value to its corresponding meaning
             for value, meaning in zip(values, meanings):
-                attr_mapping[value.strip()] = meaning.strip()  # Remove extra spaces
+                attr_mapping[value.strip()] = meaning.strip()
     mapping_dict[attr] = attr_mapping
 
 for col in df.columns:
     if col not in ['Row.names', 'Horodateur', 'Plus']:
         plt.figure(figsize=(10, 8))
 
-        # Check if the column has a mapping
         if col in mapping_dict:
-            # Use the mapping for x-axis labels and replace coded values with their meanings
-            # Convert values to string to handle numeric values in the DataFrame correctly
             mapped_values = df[col].astype(str).map(mapping_dict[col])
-            # Count occurrences of each mapped value
             mapped_value_counts = mapped_values.value_counts()
 
-            # Plot with mapped values as x-ticks
             mapped_value_counts.plot(kind='bar', color='skyblue')
             plt.title('Distribuția ' + col)
             plt.xlabel(col)
@@ -50,7 +41,6 @@ for col in df.columns:
             plt.xticks(rotation=45)
             plt.show()
         else:
-            # Plot categorical data without mapping
             df[col].value_counts().plot(kind='bar', color='skyblue')
             plt.title('Distribuția ' + col)
             plt.xlabel(col)
