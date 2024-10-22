@@ -58,8 +58,6 @@ for col in df.columns:
             plt.xticks(rotation=45)
             plt.show()
 
-sns.set(style="whitegrid")
-
 '''
 # 1. Distribuția raselor de pisici (Bar Chart)
 for col in df.columns:
