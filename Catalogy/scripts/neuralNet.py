@@ -9,7 +9,7 @@ import time
 
 
 def load_data():
-    data = pd.read_csv('../Data/balanced_cats_data_csv.csv')
+    data = pd.read_excel('../data_augmentation/cats_data_aug.xlsx')
     X = data.drop(columns=['Race'])
     Y = data['Race']
 
@@ -142,8 +142,7 @@ class Network:
                       f"Training cost = {train_cost:.2f}, Training accuracy = {train_accuracy:.2f}%")
 
         self.plot_convergence(train_errors, val_errors, train_accuracies, val_accuracies)
-        print(misclassified_points.shape[1])
-        print(misclassified_points)
+
         if len(misclassified_points) > 0:
             self.plot_misclassified(misclassified_points)
 
@@ -161,7 +160,7 @@ class Network:
 
         ax2 = ax1.twinx()
         ax2.set_ylabel("Accuracy (%)", color="tab:orange")
-        ax2.plot(train_accuracies, label="Training Accuracy", color="blue", linestyle=".")
+        ax2.plot(train_accuracies, label="Training Accuracy", color="blue", linestyle=":")
         if val_accuracies:
             ax2.plot(val_accuracies, label="Validation Accuracy", color="red", linestyle="-.")
         ax2.tick_params(axis="y", labelcolor="tab:orange")

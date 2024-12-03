@@ -25,19 +25,18 @@ print("Instanțe duplicate:\n", duplicates)
 class_counts = df['Race'].value_counts()
 print(class_counts)
 
-
-print("Numar de instante a fiecarei clase din toate atributele")
 for col in df.columns:
     if col not in ['Row.names', 'Horodateur', 'Plus']:
         print(f"\nAttribute: {col}")
         print(df[col].value_counts())
 
 
-def print_distinct_values_per_class(df, class_column):
+def distinct_values_per_class(df, class_column):
     attributes = df.columns.difference([class_column, 'Row.names', 'Horodateur', 'Plus'])
 
     for class_value in df[class_column].unique():
         if class_value not in ['Row.names', 'Horodateur', 'Plus']:
+
             print(f"\n----------{class_column}: {class_value} \n")
             class_group = df[df[class_column] == class_value]
 
@@ -49,7 +48,7 @@ def print_distinct_values_per_class(df, class_column):
                     print(f"  Valoare: {value}, Frecvență: {count}")
 
 
-print_distinct_values_per_class(df, 'Race')
+distinct_values_per_class(df, 'Race')
 
 sns.set(style="whitegrid")
 plt.figure(figsize=(8, 7))
