@@ -9,7 +9,7 @@ import time
 
 
 def load_data():
-    data = pd.read_csv('../Data/balanced_cats_data_csv.csv')
+    data = pd.read_excel('../data_augmentation/cats_data_aug.xlsx')
     X = data.drop(columns=['Race'])
     Y = data['Race']
 
@@ -161,7 +161,7 @@ class Network:
 
         ax2 = ax1.twinx()
         ax2.set_ylabel("Accuracy (%)", color="tab:orange")
-        ax2.plot(train_accuracies, label="Training Accuracy", color="blue", linestyle=".")
+        ax2.plot(train_accuracies, label="Training Accuracy", color="blue", linestyle=":")
         if val_accuracies:
             ax2.plot(val_accuracies, label="Validation Accuracy", color="red", linestyle="-.")
         ax2.tick_params(axis="y", labelcolor="tab:orange")
