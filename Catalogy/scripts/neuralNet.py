@@ -87,7 +87,8 @@ class Network:
         accuracy = np.mean(predicted_labels == true_labels) * 100
         return accuracy
 
-    def train(self, X_train, Y_train, epochs, batch_size, learning_rate, lmbd=0.0005, val_X=None, val_Y=None, patience=10):
+    def train(self, X_train, Y_train, epochs, batch_size, learning_rate, lmbd=0.0005, val_X=None, val_Y=None,
+              patience=10):
         best_val_accuracy = 0
         epochs_without_improvement = 0
         train_errors = []
@@ -141,6 +142,7 @@ class Network:
                       f"Training cost = {train_cost:.2f}, Training accuracy = {train_accuracy:.2f}%")
 
         self.plot_convergence(train_errors, val_errors, train_accuracies, val_accuracies)
+
         if len(misclassified_points) > 0:
             self.plot_misclassified(misclassified_points)
 
