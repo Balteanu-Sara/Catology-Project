@@ -142,8 +142,7 @@ class Network:
                       f"Training cost = {train_cost:.2f}, Training accuracy = {train_accuracy:.2f}%")
 
         self.plot_convergence(train_errors, val_errors, train_accuracies, val_accuracies)
-        print(misclassified_points.shape[1])
-        print(misclassified_points)
+
         if len(misclassified_points) > 0:
             self.plot_misclassified(misclassified_points)
 
