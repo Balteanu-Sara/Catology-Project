@@ -1,3 +1,4 @@
+import random
 from math import floor
 
 import duckdb
@@ -56,6 +57,8 @@ df["Zone"] = df["Zone"].map({"U": 1, "PU": 2, "R": 3})
 df["Abondance"] = df["Abondance"].map(lambda a: int(a) if a != "NSP" else 0)
 
 
+for i in df[df["Sexe"] == 0].index:
+    df.loc[i, "Sexe"] = random.choice([1, 2])
 unspecified_entries = duckdb.query("SELECT COUNT(Race) as cnt FROM df WHERE Race<0").to_df()["cnt"][0]
 remaining = duckdb.query("SELECT Race,COUNT(Race) FROM df GROUP BY Race HAVING Race>=0").to_df()
 total_specified = len(df) - unspecified_entries
@@ -100,4 +103,4 @@ y_pred = rf.predict(X_test)
 print(confusion_matrix(y_test, y_pred))
 print(recall_score(y_test, y_pred, average="weighted"))
 
-#augmented_df.to_excel("cats_data_aug.xlsx")
+augmented_df.to_excel("cats_data_aug.xlsx", index=False)
