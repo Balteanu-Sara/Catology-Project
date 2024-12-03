@@ -14,7 +14,6 @@ df["Zone"] = df["Zone"].map({"U": 1, "PU": 2, "R": 3})
 df["Abondance"] = df["Abondance"].map(lambda a: int(a) if a != "NSP" else 0)
 
 print(df.info())
-print(df.describe(include='all').to_string())
 
 missing_values = df.isnull().sum()
 
@@ -25,9 +24,6 @@ print("Instanțe duplicate:\n", duplicates)
 
 class_counts = df['Race'].value_counts()
 print(class_counts)
-
-
-print(df.to_string(max_rows=100))
 
 
 print("Numar de instante a fiecarei clase din toate atributele")

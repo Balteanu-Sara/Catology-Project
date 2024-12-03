@@ -32,7 +32,7 @@ for attr in code_df['Variable'].unique():
 
 for col in df.columns:
     if col not in ['Row.names', 'Horodateur', 'Plus']:
-        plt.figure(figsize=(10, 8))
+        plt.figure(figsize=(8, 7))
 
         # Check if the column has a mapping
         if col in mapping_dict:
