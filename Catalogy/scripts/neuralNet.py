@@ -1,29 +1,22 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
 from sklearn.utils import shuffle
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
-import time
-
+import pickle
 
 def load_data():
-    data = pd.read_excel('../data_augmentation/cats_data_aug.xlsx')
-    X = data.drop(columns=['Race'])
-    Y = data['Race']
-
+    data = pd.read_excel('../Data/cats_data_en.xlsx', sheet_name='Data')
+    X = data.drop(columns=['Breed'])
+    Y = data['Breed']
     encoder = OneHotEncoder(sparse_output=False)
     Y_onehot = encoder.fit_transform(Y.values.reshape(-1, 1))
-
     X = (X - X.min()) / (X.max() - X.min())
-    return X.values, Y_onehot
-
+    return X.values, Y_onehot, encoder
 
 def softmax(x):
     e_x = np.exp(x - np.max(x, axis=0, keepdims=True))
     return e_x / np.sum(e_x, axis=0, keepdims=True)
-
 
 class CrossEntropyCost:
     @staticmethod
@@ -37,7 +30,6 @@ class CrossEntropyCost:
     @staticmethod
     def delta(a, y):
         return a - y
-
 
 class Network:
     def __init__(self, sizes):
@@ -120,88 +112,61 @@ class Network:
                 val_accuracy = self.evaluate(val_X, val_Y)
                 val_accuracies.append(val_accuracy)
 
-                print(f"Epoch {epoch}: "
-                      f"Training cost = {train_cost:.2f}, Training accuracy = {train_accuracy:.2f}%, "
-                      f"Validation cost = {val_cost:.2f}, Validation accuracy = {val_accuracy:.2f}%")
-
                 if val_accuracy > best_val_accuracy:
                     best_val_accuracy = val_accuracy
                     epochs_without_improvement = 0
                 else:
                     epochs_without_improvement += 1
                     if epochs_without_improvement >= patience:
-                        print(f"Early stopping triggered after {epoch} epochs.")
                         break
 
-                predicted_labels = np.argmax(self.feedforward(val_X.T), axis=0)
-                true_labels = np.argmax(val_Y, axis=1)
-                misclassified_indices = np.where(predicted_labels != true_labels)[0]
-                misclassified_points = val_X[misclassified_indices]
-            else:
-                print(f"Epoch {epoch}: "
-                      f"Training cost = {train_cost:.2f}, Training accuracy = {train_accuracy:.2f}%")
+        return train_accuracies, val_accuracies
 
-        self.plot_convergence(train_errors, val_errors, train_accuracies, val_accuracies)
-
-        if len(misclassified_points) > 0:
-            self.plot_misclassified(misclassified_points)
-
-    @staticmethod
-    def plot_convergence(train_errors, val_errors, train_accuracies, val_accuracies):
-        fig, ax1 = plt.subplots(figsize=(12, 6))
-
-        ax1.set_xlabel("Epochs")
-        ax1.set_ylabel("Cost", color="tab:purple")
-        ax1.plot(train_errors, label="Training Cost", color="green", linestyle="-")
-        if val_errors:
-            ax1.plot(val_errors, label="Validation Cost", color="magenta", linestyle="--")
-        ax1.tick_params(axis="y", labelcolor="tab:purple")
-        ax1.legend(loc="upper left")
-
-        ax2 = ax1.twinx()
-        ax2.set_ylabel("Accuracy (%)", color="tab:orange")
-        ax2.plot(train_accuracies, label="Training Accuracy", color="blue", linestyle=":")
-        if val_accuracies:
-            ax2.plot(val_accuracies, label="Validation Accuracy", color="red", linestyle="-.")
-        ax2.tick_params(axis="y", labelcolor="tab:orange")
-        ax2.legend(loc="upper right")
-
-        plt.title("Convergence of Training and Validation")
-        plt.grid(True)
-        plt.show()
-
-
-    def plot_misclassified(self, misclassified_points):
-        pca = PCA(n_components=2)
-        reduced_data = pca.fit_transform(misclassified_points)
-
-        plt.figure(figsize=(8, 6))
-        plt.scatter(reduced_data[:, 0], reduced_data[:, 1], color="red", label="Misclassified")
-        plt.title("Misclassified Points (PCA Reduced Dimensions)")
-        plt.xlabel("PCA1")
-        plt.ylabel("PCA2")
-        plt.legend()
-        plt.grid(True)
-        plt.show()
-
-
-def train_validation_split(X, Y, validation_split=0.2):
-    return train_test_split(X, Y, test_size=validation_split)
-
-start = time.time()
-
-train_X, train_Y = load_data()
-
-train_X, val_X, train_Y, val_Y = train_validation_split(train_X, train_Y)
+train_X, train_Y, encoder = load_data()
+train_X, val_X, train_Y, val_Y = train_test_split(train_X, train_Y, test_size=0.2)
 
 net = Network([train_X.shape[1], 512, train_Y.shape[1]])
 
 epochs = 100
 batch_size = 128
-learning_rate = 0.3
-lmbd = 0.0002
+learning_rate = 0.1
+lmbd = 0.0001
 
-net.train(train_X, train_Y, epochs, batch_size, learning_rate, lmbd, val_X, val_Y)
+train_accuracies, val_accuracies = net.train(train_X, train_Y, epochs, batch_size, learning_rate, lmbd, val_X, val_Y)
 
-end = time.time()
-print(f"Time: {(end - start) / 60:.2f} minutes")
+with open('model.pkl', 'wb') as f:
+    pickle.dump(net, f)
+
+with open("input_data.pkl", "rb") as f:
+    input_data = pickle.load(f)
+
+input_data = np.array(input_data).reshape(1, -1)
+input_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
+
+predicted_breed = net.feedforward(input_data.T)
+predicted_label = np.argmax(predicted_breed, axis=0)
+predicted_label = predicted_label.item()
+
+breed_mapping = {
+    1: "Bengal",
+    2: "Birman",
+    3: "British Shorthair",
+    4: "Chartreux",
+    5: "European",
+    6: "Maine Coon",
+    7: "Persian",
+    8: "Ragdoll",
+    9: "Savannah",
+    10: "Sphynx",
+    11: "Siamese",
+    12: "Turkish Angora",
+    0: "Other",
+    -1: "Not specified",
+    -2: "No breed"
+}
+
+predicted_breed_name = breed_mapping.get(predicted_label, "Unknown breed")
+print(f"The predicted breed is: {predicted_breed_name}")
+
+print(f"Final training accuracy: {train_accuracies[-1]:.2f}%")
+print(f"Final validation accuracy: {val_accuracies[-1]:.2f}%")
