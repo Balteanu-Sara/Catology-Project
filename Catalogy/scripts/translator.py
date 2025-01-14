@@ -40,6 +40,7 @@ async def main():
     }
     data_aug_translated.rename(columns=translated_columns, inplace=True)
 
+    data_aug_translated.rename(columns={"PredBird": "Catches birds", "PredMamm": "Catches mice", "Ext": "Time spent outdoors", "Obs": "Time spent with owner"}, inplace=True)
     output_file = '../Data/cats_data_en.xlsx'
     with pd.ExcelWriter(output_file) as writer:
         code_data_translated.to_excel(writer, sheet_name='Code', index=False)

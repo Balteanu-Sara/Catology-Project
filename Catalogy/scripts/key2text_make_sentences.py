@@ -9,7 +9,7 @@ import pickle
 # Attribute mappings (unchanged)
 attribute_mapping = {
     "Sex": {0: "Unspecified", 1: "Female", 2: "Male"},
-    "Age": {0: "Less than 1 year", 1.5: "1-2 years", 6: "2-10 years", 10: "More than 10 years"},
+    "Age": {0: "Less than 1 year", 1: "1-2 years", 2: "2-10 years", 3: "More than 10 years"},
     "Number": {1: "One cat", 2: "Two cats", 3: "Three cats", 4: "Four cats", 5: "Five cats", 6: "More than five cats"},
     "Accommodation": {1: "Apartment without balcony", 2: "Apartment with balcony or terrace", 3: "House in a subdivision", 4: "Individual house"},
     "Area": {1: "Urban", 2: "Periurban", 3: "Rural"},

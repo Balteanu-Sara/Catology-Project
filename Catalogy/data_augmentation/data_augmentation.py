@@ -31,11 +31,6 @@ def SMOTE(sample: pd.DataFrame , N: int, k: int, discrete_attributes) -> np.arra
         while N != 0:
             nn = randrange(1, k + 1)
             for attr in range(num_attrs):
-                if sample.columns[attr] not in discrete_attributes:
-                    dif = sample.iloc[nnarray[nn]].iloc[attr] - sample.iloc[i].iloc[attr]
-                    gap = uniform(0, 1)
-                    synthetic[new_index][attr] = sample.iloc[i].iloc[attr] + gap * dif
-                else:
                     synthetic[new_index][attr] = random.choice([sample.iloc[nnarray[nn]].iloc[attr], sample.iloc[i].iloc[attr]])
             new_index += 1
             N -= 1
@@ -51,7 +46,7 @@ df = pd.read_excel('../Data/cats_data.xlsx', sheet_name='Data')
 df.drop(columns=["Row.names", "Horodateur", "Plus"],inplace=True)
 
 df["Sexe"] = df["Sexe"].map({"NSP": 0, "F": 1, "M": 2})
-df["Age"] = df["Age"].map({"Moinsde1": 0, "1a2": 1.5, "2a10": 6, "Plusde10": 10})
+df["Age"] = df["Age"].map({"Moinsde1": 0, "1a2": 1, "2a10": 2, "Plusde10": 3})
 df["Race"] = df["Race"].map({"BEN": 1, "SBI": 2, "BRI": 3, "CHA": 4, "EUR": 5, "MCO": 6, "PER": 7, "RAG": 8, "SAV": 9,
                 "SPH": 10, "ORI": 11, "TUV": 12, "Autre": 0, "NSP": -1, "NR": -2})
 df["Nombre"] = df["Nombre"].map(lambda n: int(n) if n != "Plusde5" else 6)
