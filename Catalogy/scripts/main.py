@@ -1,6 +1,8 @@
 import os
 import key2text_make_sentences
 import neuralNet
+from Catalogy.scripts import gan_generate
+
 
 def ensure_backslash(path):
     normalized_path = path.replace("\\", "\\\\")
@@ -10,10 +12,10 @@ def ensure_backslash(path):
     return path
 
 bool = True
-commands = ["identify_breed", "exit"]
+commands = ["identify_breed", "describe_breed", "exit"]
 
 while bool:
-    command = input("Type a command (identify_breed | exit) : ").strip().lower()
+    command = input("Type a command (identify_breed | describe_breed | exit) : ").strip().lower()
 
     if command not in commands:
         print("The command is not valid.")
@@ -39,6 +41,9 @@ while bool:
 
             bool1 = False
 
+
+    if command == "describe_breed":
+        gan_generate.main()
 
     if command == "exit":
         bool = False
