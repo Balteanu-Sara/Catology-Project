@@ -122,51 +122,52 @@ class Network:
 
         return train_accuracies, val_accuracies
 
-train_X, train_Y, encoder = load_data()
-train_X, val_X, train_Y, val_Y = train_test_split(train_X, train_Y, test_size=0.2)
+def save_model(network, filename):
+    with open(filename, 'wb') as f:
+        pickle.dump(network, f)
 
-net = Network([train_X.shape[1], 512, train_Y.shape[1]])
+# 6. Function to load the model
+def load_model(filename):
+    with open(filename, 'rb') as f:
+        return pickle.load(f)
 
-epochs = 100
-batch_size = 128
-learning_rate = 0.1
-lmbd = 0.0001
+# 7. Function to predict breed from input data
+def predict_breed(network, input_data, breed_mapping):
+    input_data = np.array(input_data).reshape(1, -1)
+    input_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
+    predicted_breed = network.feedforward(input_data.T)
+    predicted_label = np.argmax(predicted_breed, axis=0)
+    predicted_label = predicted_label.item()
+    predicted_breed_name = breed_mapping.get(predicted_label, "Unknown breed")
+    return predicted_breed_name
 
-train_accuracies, val_accuracies = net.train(train_X, train_Y, epochs, batch_size, learning_rate, lmbd, val_X, val_Y)
+# Main function to run the training process
+def main():
+    file_path = '../Data/cats_data_en.xlsx'
+    train_X, train_Y, encoder = load_data()
+    train_X, val_X, train_Y, val_Y = train_test_split(train_X, train_Y, test_size=0.2)
 
-with open('model.pkl', 'wb') as f:
-    pickle.dump(net, f)
+    net = Network([train_X.shape[1], 512, train_Y.shape[1]])
 
-with open("input_data.pkl", "rb") as f:
-    input_data = pickle.load(f)
+    epochs = 100
+    batch_size = 128
+    learning_rate = 0.1
+    lmbd = 0.0001
 
-input_data = np.array(input_data).reshape(1, -1)
-input_data = (input_data - np.min(input_data)) / (np.max(input_data) - np.min(input_data))
+    train_accuracies, val_accuracies = net.train(train_X, train_Y, epochs, batch_size, learning_rate, lmbd, val_X, val_Y)
 
-predicted_breed = net.feedforward(input_data.T)
-predicted_label = np.argmax(predicted_breed, axis=0)
-predicted_label = predicted_label.item()
+    save_model(net, 'model.pkl')
 
-breed_mapping = {
-    1: "Bengal",
-    2: "Birman",
-    3: "British Shorthair",
-    4: "Chartreux",
-    5: "European",
-    6: "Maine Coon",
-    7: "Persian",
-    8: "Ragdoll",
-    9: "Savannah",
-    10: "Sphynx",
-    11: "Siamese",
-    12: "Turkish Angora",
-    0: "Other",
-    -1: "Not specified",
-    -2: "No breed"
-}
+    breed_mapping = {
+        1: "Bengal", 2: "Birman", 3: "British Shorthair", 4: "Chartreux", 5: "European", 6: "Maine Coon",
+        7: "Persian", 8: "Ragdoll", 9: "Savannah", 10: "Sphynx", 11: "Siamese", 12: "Turkish Angora", 0: "Other",
+        -1: "Not specified", -2: "No breed"
+    }
 
-predicted_breed_name = breed_mapping.get(predicted_label, "Unknown breed")
-print(f"The predicted breed is: {predicted_breed_name}")
+    input_data = pickle.load(open("input_data.pkl", "rb"))
+    predicted_breed_name = predict_breed(net, input_data, breed_mapping)
 
-print(f"Final training accuracy: {train_accuracies[-1]:.2f}%")
-print(f"Final validation accuracy: {val_accuracies[-1]:.2f}%")
+    print(f"The predicted breed is: {predicted_breed_name}")
+    print(f"Final training accuracy: {train_accuracies[-1]:.2f}%")
+    print(f"Final validation accuracy: {val_accuracies[-1]:.2f}%")
+

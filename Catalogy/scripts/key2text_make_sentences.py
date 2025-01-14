@@ -1,19 +1,12 @@
+# keyword_extractor.py
+
 from rake_nltk import Rake
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import pickle
 
-
-file_path = "../Data/text"
-
-with open(file_path, "r", encoding="utf-8") as file:
-    text = file.read()
-
-rake = Rake()
-rake.extract_keywords_from_text(text)
-keywords = rake.get_ranked_phrases()
-
+# Attribute mappings (unchanged)
 attribute_mapping = {
     "Sex": {0: "Unspecified", 1: "Female", 2: "Male"},
     "Age": {0: "Less than 1 year", 1.5: "1-2 years", 6: "2-10 years", 10: "More than 10 years"},
@@ -43,53 +36,106 @@ attribute_mapping = {
     "Breed": {1: "Bengal", 2: "Birman", 3: "British Shorthair", 4: "Chartreux", 5: "European", 6: "Maine Coon", 7: "Persian", 8: "Ragdoll", 9: "Savannah", 10: "Sphynx", 11: "Siamese", 12: "Turkish Angora", 0: "Other", -1: "Not specified", -2: "No breed"}
 }
 
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+def load_text(file_path):
+    """Load the text from the given file."""
+    with open(file_path, "r", encoding="utf-8") as file:
+        return file.read()
 
-attributes = list(attribute_mapping.keys())
-attribute_values = {key: list(value.values()) for key, value in attribute_mapping.items()}
-keyword_embeddings = model.encode(keywords, convert_to_tensor=True)
-attribute_embeddings = model.encode(attributes, convert_to_tensor=True)
+def extract_keywords(text):
+    """Extract keywords from the text using RAKE."""
+    rake = Rake()
+    rake.extract_keywords_from_text(text)
+    return rake.get_ranked_phrases()
 
-results = {}
-for i, keyword in enumerate(keywords):
-    similarities = cosine_similarity(
-        keyword_embeddings[i].reshape(1, -1),
-        attribute_embeddings
-    )[0]
-    best_attribute_idx = np.argmax(similarities)
-    best_attribute = attributes[best_attribute_idx]
-    value_embeddings = model.encode(attribute_values[best_attribute], convert_to_tensor=True)
-    value_similarities = cosine_similarity(
-        keyword_embeddings[i].reshape(1, -1),
-        value_embeddings
-    )[0]
-    best_value_idx = np.argmax(value_similarities)
-    best_value = attribute_values[best_attribute][best_value_idx]
-    results[keyword] = (best_attribute, best_value_idx + 1, best_value)
+def load_model():
+    """Load the sentence transformer model."""
+    return SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
-final_values = {key: None for key in attribute_mapping.keys()}
-for keyword, (attribute, value_key, value) in results.items():
-    if final_values[attribute] is None or value_key > final_values[attribute]:
-        final_values[attribute] = value_key
-for attribute, default_values in attribute_mapping.items():
-    if final_values[attribute] is None:
-        final_values[attribute] = list(default_values.keys())[0]
+def encode_keywords(keywords, model):
+    """Encode the keywords into embeddings using the model."""
+    return model.encode(keywords, convert_to_tensor=True)
 
-final_dict = {
-    attribute: {
-        "value": final_values[attribute],
-        "description": attribute_mapping[attribute].get(final_values[attribute], "Unknown")
+def encode_attributes(attributes, model):
+    """Encode the attributes into embeddings using the model."""
+    return model.encode(attributes, convert_to_tensor=True)
+
+def calculate_similarities(keywords, keyword_embeddings, attribute_embeddings, attribute_values, attributes, model):
+    """Calculate similarities between keywords and attributes, and then between keywords and attribute values."""
+    results = {}
+    for i, keyword in enumerate(keywords):
+        similarities = cosine_similarity(
+            keyword_embeddings[i].reshape(1, -1),
+            attribute_embeddings
+        )[0]
+        best_attribute_idx = np.argmax(similarities)
+        best_attribute = attributes[best_attribute_idx]
+        value_embeddings = model.encode(attribute_values[best_attribute], convert_to_tensor=True)
+        value_similarities = cosine_similarity(
+            keyword_embeddings[i].reshape(1, -1),
+            value_embeddings
+        )[0]
+        best_value_idx = np.argmax(value_similarities)
+        best_value = attribute_values[best_attribute][best_value_idx]
+        results[keyword] = (best_attribute, best_value_idx + 1, best_value)
+    return results
+
+def assign_final_values(results, attribute_mapping):
+    """Assign the final values to the attributes based on keyword analysis."""
+    final_values = {key: None for key in attribute_mapping.keys()}
+    for keyword, (attribute, value_key, value) in results.items():
+        if final_values[attribute] is None or value_key > final_values[attribute]:
+            final_values[attribute] = value_key
+    for attribute, default_values in attribute_mapping.items():
+        if final_values[attribute] is None:
+            final_values[attribute] = list(default_values.keys())[0]
+    return final_values
+
+def create_final_dict(final_values, attribute_mapping):
+    """Create the final dictionary with descriptions of the attributes."""
+    return {
+        attribute: {
+            "value": final_values[attribute],
+            "description": attribute_mapping[attribute].get(final_values[attribute], "Unknown")
+        }
+        for attribute in attribute_mapping.keys()
     }
-    for attribute in attribute_mapping.keys()
-}
 
-print(final_dict)
-if 'Breed' in final_dict:
-    del final_dict['Breed']
-input_data = []
-for attribute, details in final_dict.items():
-    input_data.append(details['value'])
+def save_input_data(input_data, file_name="input_data.pkl"):
+    """Save the input data to a pickle file."""
+    with open(file_name, "wb") as f:
+        pickle.dump(input_data, f)
 
-with open("input_data.pkl", "wb") as f:
-    pickle.dump(input_data, f)
+def main(file_path):
+    # Load text and extract keywords
+    text = load_text(file_path)
+    keywords = extract_keywords(text)
 
+    #Load model and prepare embeddings
+    model = load_model()
+    attributes = list(attribute_mapping.keys())
+    attribute_values = {key: list(value.values()) for key, value in attribute_mapping.items()}
+    keyword_embeddings = encode_keywords(keywords, model)
+    attribute_embeddings = encode_attributes(attributes, model)
+
+    # Calculate similarities and assign results
+    results = calculate_similarities(keywords, keyword_embeddings, attribute_embeddings, attribute_values, attributes,
+                                     model)
+
+    # Assign final values based on the results
+    final_values = assign_final_values(results, attribute_mapping)
+
+    # Create the final dictionary with descriptions
+    final_dict = create_final_dict(final_values, attribute_mapping)
+
+    # Print the final dictionary
+    print(final_dict)
+
+    # Remove 'Breed' if it exists
+    if 'Breed' in final_dict:
+        del final_dict['Breed']
+
+    # Prepare the input data for further use
+    input_data = [details['value'] for attribute, details in final_dict.items()]
+
+    # Save the input data
+    save_input_data(input_data)
